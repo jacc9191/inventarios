@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="es">
 
 <head>
   <meta charset="UTF-8">
-  <title>Moda&Estilo1</title>
+  <title>Moda&Estim</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -449,7 +450,7 @@
 <body>
 
   <header>
-    <h1>Moda & Estilo</h1>
+    <h1>Moda & Estilo co</h1>
   </header>
 
   <div id="notificacion" class="notificacion oculto">Producto agregado al carrito 🛒</div>
@@ -501,19 +502,15 @@
     aria-label="Chatea con nosotros por WhatsApp">
     <i class="fab fa-whatsapp"></i><span class="texto-wsp"> </span>
   </a>
-
-
-  <!-- Panel Admin oculto -->
-  <div id="admin-panel"
-    style="display:none; position:fixed; top:10%; left:50%; transform:translateX(-50%); background:#fff; padding:1.5rem; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.2); z-index:9999; width:90%; max-width:450px;">
+  <div id="admin-panel" style="display:none;">
+    <!-- Formulario de login -->
     <div id="admin-login">
-      <h3>🔐 Acceso Administrador</h3>
-      <input id="admin-usuario" placeholder="👤 Usuario" class="input" />
-      <input id="admin-clave" placeholder="🔒 Clave" type="password" class="input" />
-      <button onclick="loginAdmin()" class="btn btn-success">Entrar</button>
-      <button onclick="cerrarAdminPanel()" class="btn btn-secondary">Cerrar</button>
+      <input id="admin-usuario" placeholder="Usuario">
+      <input id="admin-clave" type="password" placeholder="Clave">
+      <button onclick="loginAdmin()">Entrar</button>
     </div>
 
+    <!-- Panel de contenido del administrador -->
     <div id="admin-contenido" style="display:none;">
       <h3>🛠️ Panel de Control</h3>
 
@@ -539,6 +536,7 @@
     </div>
   </div>
 
+
   <footer style="text-align: center; padding: 1rem; background: #2d3b49; color: white;">
     <div style="font-size: 1.8rem;">
       <a href="https://facebook.com/tu-pagina" target="_blank" style="margin: 0 10px; color: #0e54eb;"><i
@@ -553,6 +551,21 @@
     </div>
   </footer>
 
+  <script>
+    // ✅ Configuración de Firebase ya personalizada
+    const firebaseConfig = {
+      apiKey: "AIzaSyCdRD_7zjuRp5586wcaa2WA_ZhzecKf5jM",
+      authDomain: "modaestilo-e8dec.firebaseapp.com",
+      projectId: "modaestilo-e8dec",
+      storageBucket: "modaestilo-e8dec.firebasestorage.app",
+      messagingSenderId: "710901651909",
+      appId: "1:710901651909:web:fe0bd97a14b25e191653ac"
+    };
+
+    // ✅ Inicializar Firebase y Firestore
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+  </script>
 
   <script>
     let carrito = JSON.parse(localStorage.getItem('carrito')) || [];
@@ -705,167 +718,127 @@
       });
     }
 
-    // ==== PANEL ADMINISTRADOR ====
-    let keysPressed = new Set();
-    document.addEventListener("keydown", e => {
-      keysPressed.add(e.key);
-      if (keysPressed.has("Control") && keysPressed.has("Shift") && keysPressed.has("A")) {
-        document.getElementById("admin-panel").style.display = "block";
-      }
-    });
-    document.addEventListener("keyup", e => keysPressed.delete(e.key));
 
-    function cerrarAdminPanel() {
-      document.getElementById("admin-panel").style.display = "none";
-      document.getElementById("admin-login").style.display = "block";
-      document.getElementById("admin-contenido").style.display = "none";
-    }
-
-    function loginAdmin() {
-      const usuario = document.getElementById("admin-usuario").value;
-      const clave = document.getElementById("admin-clave").value;
-      if (usuario === "admin" && clave === "1234") {
-        document.getElementById("admin-login").style.display = "none";
-        document.getElementById("admin-contenido").style.display = "block";
-        cargarProductos();
-      } else {
-        alert("Usuario o clave incorrecta.");
-      }
-    }
-
-     // === ACTUALIZADO PANEL ADMINISTRADOR ===
-  function cargarProductos() {
-    const productos = document.querySelectorAll(".producto");
-    const selector = document.getElementById("selectorProducto");
-    selector.innerHTML = "";
-    productos.forEach((prod, i) => {
-      const nombre = prod.querySelector("h2").textContent;
-      const id = prod.getAttribute("data-id") || i;
-      selector.innerHTML += `<option value="${id}" data-index="${i}">${nombre}</option>`;
-    });
-  }
-
-  function eliminarProductoDesdePanel() {
-    const selector = document.getElementById("selectorProducto");
-    const id = selector.value;
-    const index = selector.selectedIndex;
-    const option = selector.options[index];
-    const indexHTML = option?.getAttribute("data-index");
-
-    if (!id || indexHTML === null) return alert("Selecciona un producto válido.");
-
-    if (confirm("¿Estás seguro de eliminar este producto desde Firebase?")) {
-      db.collection("productos").doc(id).delete()
-        .then(() => {
-          alert("✅ Producto eliminado correctamente");
-          const productos = document.querySelectorAll(".producto");
-          const prodHTML = productos[indexHTML];
-          prodHTML?.remove();
-          selector.remove(index);
-        })
-        .catch(error => {
-          console.error("Error al eliminar:", error);
-          alert("❌ Hubo un error al eliminar el producto");
-        });
-    }
-  }
-
-    function actualizarProducto() {
-      const index = document.getElementById("selectorProducto").value;
-      const url = document.getElementById("nuevaImagen").value;
-      const tallas = document.getElementById("nuevasTallas").value.split(",").map(t => t.trim());
+    // === ACTUALIZADO PANEL ADMINISTRADOR ===
+    function cargarProductos() {
       const productos = document.querySelectorAll(".producto");
-      const prod = productos[index];
-
-      if (url) prod.querySelector(".main-img").src = url;
-
-      if (tallas.length > 0) {
-        const selectTalla = prod.querySelectorAll("select")[1];
-        selectTalla.innerHTML = "";
-        tallas.forEach(t => {
-          selectTalla.innerHTML += `<option>${t}</option>`;
-        });
-      }
-
-      alert("✅ Producto actualizado");
-      cerrarAdminPanel();
-    }
-
-    function agregarNuevoProducto() {
-      const nombre = document.getElementById("nuevoNombre").value.trim();
-      const precio = parseInt(document.getElementById("nuevoPrecio").value);
-      const precioOriginal = parseInt(document.getElementById("nuevoPrecioOriginal").value);
-      const imagen = document.getElementById("nuevoImagen").value.trim();
-      const color = document.getElementById("nuevoColor").value.trim();
-      const tallas = document.getElementById("nuevoTallas").value.split(",").map(t => t.trim());
-
-      if (!nombre || isNaN(precio) || isNaN(precioOriginal) || !imagen || !color || tallas.length === 0) {
-        alert("⚠️ Debes completar todos los campos correctamente.");
-        return;
-      }
-
-      const nuevoHTML = `
-      <div class="producto" data-imagenes='{}'>
-        <img class="main-img" src="${imagen}" alt="${nombre}">
-        <div class="imagenes-mini"></div>
-        <h2>${nombre}</h2>
-        <p>Precio: <s>$${precioOriginal.toLocaleString()}</s> <strong>$${precio.toLocaleString()}</strong></p>
-        <div class="opciones">
-          <select class="color-select"><option value="${color.toLowerCase()}">${color}</option></select>
-          <select>${tallas.map(t => `<option>${t}</option>`).join("")}</select>
-        </div>
-        <button>Agregar al carrito</button>
-      </div>
-    `;
-
-      const productoContainer = document.createElement("div");
-      productoContainer.innerHTML = nuevoHTML;
-      const nuevoProducto = productoContainer.querySelector(".producto");
-      document.querySelector("#contenedor-productos").appendChild(nuevoProducto);
-      inicializarProducto(nuevoProducto);
-
-      // Guardar en Firebase
-      db.collection("productos").add({ nombre, precio, precioOriginal, imagen, color, tallas })
-        .then(() => console.log("🟢 Producto guardado en Firebase"))
-        .catch(err => console.error("❌ Error guardando producto:", err));
-
-      alert("✅ Producto agregado exitosamente");
-      cerrarAdminPanel();
-    }
-
-    async function cargarProductosDesdeFirebase() {
-      const snapshot = await db.collection("productos").get();
-      snapshot.forEach(doc => {
-        const p = doc.data();
-        const id = doc.id;
-
-        const productoHTML = `
-        <div class="producto" data-id="${id}" data-imagenes='{}'>
-          <img class="main-img" src="${p.imagen}" alt="${p.nombre}">
-          <div class="imagenes-mini"></div>
-          <h2>${p.nombre}</h2>
-          <p>Precio: <s>$${parseInt(p.precioOriginal).toLocaleString()}</s> <strong>$${parseInt(p.precio).toLocaleString()}</strong></p>
-          <div class="opciones">
-            <select class="color-select"><option value="${p.color.toLowerCase()}">${p.color}</option></select>
-            <select>${p.tallas.map(t => `<option>${t}</option>`).join("")}</select>
-          </div>
-          <button>Agregar al carrito</button>
-          <button onclick="eliminarProductoDeFirebase('${id}')">🗑️ Eliminar</button>
-        </div>
-      `;
-
-        const cont = document.createElement("div");
-        cont.innerHTML = productoHTML;
-        const nodo = cont.querySelector(".producto");
-        document.querySelector("#contenedor-productos").appendChild(nodo);
-        inicializarProducto(nodo);
+      const selector = document.getElementById("selectorProducto");
+      selector.innerHTML = "";
+      productos.forEach((prod, i) => {
+        const nombre = prod.querySelector("h2").textContent;
+        const id = prod.getAttribute("data-id") || i;
+        selector.innerHTML += `<option value="${id}" data-index="${i}">${nombre}</option>`;
       });
     }
 
-    window.addEventListener("DOMContentLoaded", () => {
-      actualizarCarrito();
-      cargarProductosDesdeFirebase();
+function eliminarProductoDesdePanel() {
+  const selector = document.getElementById("selectorProducto");
+  const id = selector.value;
+
+  if (!id) return alert("Selecciona un producto válido.");
+
+  if (confirm("¿Estás seguro de eliminar este producto desde Firebase?")) {
+    db.collection("productos").doc(id).delete()
+      .then(() => {
+        alert("✅ Producto eliminado correctamente");
+        cerrarAdminPanel();
+      })
+      .catch(error => {
+        console.error("Error al eliminar:", error);
+        alert("❌ Hubo un error al eliminar el producto");
+      });
+  }
+}
+
+function actualizarProducto() {
+  const selector = document.getElementById("selectorProducto");
+  const id = selector.value;
+
+  if (!id) return alert("❌ Producto no encontrado.");
+
+  const nuevaImagen = document.getElementById("nuevaImagen").value.trim();
+  const nuevasTallas = document.getElementById("nuevasTallas").value.trim().split(",").map(t => t.trim()).filter(t => t);
+
+  if (!nuevaImagen && nuevasTallas.length === 0) {
+    return alert("⚠️ Ingresa al menos un cambio (imagen o tallas).");
+  }
+
+  const updateData = {};
+  if (nuevaImagen) updateData.imagen = nuevaImagen;
+  if (nuevasTallas.length > 0) updateData.tallas = nuevasTallas;
+
+  db.collection("productos").doc(id).update(updateData)
+    .then(() => {
+      alert("✅ Cambios guardados correctamente");
+      cerrarAdminPanel();
+    })
+    .catch(err => {
+      console.error("❌ Error al actualizar Firebase:", err);
+      alert("❌ No se pudo guardar en Firebase.");
     });
+}
+
+
+function agregarNuevoProducto() {
+  const nombre = document.getElementById("nuevoNombre").value.trim();
+  const precio = parseInt(document.getElementById("nuevoPrecio").value);
+  const precioOriginal = parseInt(document.getElementById("nuevoPrecioOriginal").value);
+  const imagen = document.getElementById("nuevoImagen").value.trim();
+  const color = document.getElementById("nuevoColor").value.trim();
+  const tallas = document.getElementById("nuevoTallas").value.split(",").map(t => t.trim());
+
+  if (!nombre || isNaN(precio) || isNaN(precioOriginal) || !imagen || !color || tallas.length === 0) {
+    alert("⚠️ Debes completar todos los campos correctamente.");
+    return;
+  }
+
+  const data = { nombre, precio, precioOriginal, imagen, color, tallas };
+
+  db.collection("productos").add(data)
+    .then(() => {
+      alert("✅ Producto agregado exitosamente");
+      cerrarAdminPanel();
+    })
+    .catch(err => {
+      console.error("❌ Error guardando producto:", err);
+      alert("❌ Error al guardar el producto.");
+    });
+}
+
+
+function cargarProductosDesdeFirebase() {
+  db.collection("productos").onSnapshot(snapshot => {
+    const contenedor = document.getElementById("contenedor-productos");
+    contenedor.innerHTML = "";
+
+    snapshot.forEach(doc => {
+      const p = doc.data();
+      const id = doc.id;
+
+      const productoHTML = `
+      <div class="producto" data-id="${id}" data-imagenes='{}'>
+        <img class="main-img" src="${p.imagen}" alt="${p.nombre}">
+        <div class="imagenes-mini"></div>
+        <h2>${p.nombre}</h2>
+        <p>Precio: <s>$${parseInt(p.precioOriginal).toLocaleString()}</s> <strong>$${parseInt(p.precio).toLocaleString()}</strong></p>
+        <div class="opciones">
+          <select class="color-select"><option value="${p.color.toLowerCase()}">${p.color}</option></select>
+          <select>${p.tallas.map(t => `<option>${t}</option>`).join("")}</select>
+        </div>
+        <button class="btn-agregar">Agregar al carrito</button>
+      </div>
+    `;
+
+      const cont = document.createElement("div");
+      cont.innerHTML = productoHTML;
+      const nodo = cont.querySelector(".producto");
+      contenedor.appendChild(nodo);
+      inicializarProducto(nodo);
+    });
+
+    cargarProductos();
+  });
+}
 
     function guardarProductoEnFirebase(data) {
       return db.collection("productos").add(data);
@@ -885,6 +858,51 @@
           .catch(err => console.error("❌ Error eliminando producto:", err));
       }
     }
+
+    // Acceso al modo administrador mediante combinación secreta
+
+    window.addEventListener("DOMContentLoaded", () => {
+      actualizarCarrito();
+      cargarProductosDesdeFirebase();
+
+      // ✅ Acceso al modo administrador mediante combinación secreta
+      document.addEventListener('keydown', function (e) {
+        if (e.ctrlKey && e.altKey && e.key.toLowerCase() === 'a') {
+          e.preventDefault();
+          const panel = document.getElementById("admin-panel");
+          if (panel) {
+            panel.style.display = "block";
+            document.getElementById("admin-login").style.display = "block";
+            document.getElementById("admin-contenido").style.display = "none";
+          } else {
+            alert("No se encontró el panel de administrador.");
+          }
+        }
+      });
+    });
+
+
+    window.loginAdmin = function () {
+      const usuario = document.getElementById("admin-usuario").value.trim();
+      const clave = document.getElementById("admin-clave").value.trim();
+
+      if (usuario === "admin" && clave === "1234") {
+        document.getElementById("admin-login").style.display = "none";
+        document.getElementById("admin-contenido").style.display = "block";
+      } else {
+        alert("❌ Usuario o clave incorrectos");
+      }
+    };
+
+    window.cerrarAdminPanel = function () {
+      document.getElementById("admin-panel").style.display = "none";
+      document.getElementById("admin-login").style.display = "block";
+      document.getElementById("admin-contenido").style.display = "none";
+      document.getElementById("admin-usuario").value = "";
+      document.getElementById("admin-clave").value = "";
+    };
+
+
   </script>
 
 
