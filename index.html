@@ -4,7 +4,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Moda&Eim</title>
+  <title>Moda&Eirrrrrrrrm</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -779,7 +779,6 @@ function actualizarProducto() {
       alert("❌ No se pudo guardar en Firebase.");
     });
 }
-
 function agregarNuevoProducto() {
   const nombre = document.getElementById("nuevoNombre").value.trim();
   const precio = parseInt(document.getElementById("nuevoPrecio").value);
@@ -793,11 +792,12 @@ function agregarNuevoProducto() {
     return;
   }
 
+  const id = nombre.toLowerCase().replace(/\s+/g, "-"); // ID basado en el nombre
   const data = { nombre, precio, precioOriginal, imagen, color, tallas };
 
-  db.collection("productos").add(data)
+  db.collection("productos").doc(id).set(data)
     .then(() => {
-      alert("✅ Producto agregado exitosamente");
+      alert("✅ Producto agregado exitosamente con ID: " + id);
       cerrarAdminPanel();
     })
     .catch(err => {
